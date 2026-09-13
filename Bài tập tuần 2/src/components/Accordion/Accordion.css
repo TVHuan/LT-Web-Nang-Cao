@@ -1,0 +1,177 @@
+/* ==========================================================================
+   Accordion Component Styling
+   ========================================================================== */
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.accordion-item {
+  border: 1px solid var(--border-color, #e2e8f0);
+  background-color: var(--card-bg, #ffffff);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.accordion-item:hover {
+  border-color: var(--primary-light, #93c5fd);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.accordion-item--active {
+  border-color: var(--primary-color, #2563eb);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+  background-color: var(--card-bg, #ffffff);
+}
+
+.accordion-header-wrapper {
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--text-heading, #0f172a);
+  transition: background-color 0.2s ease;
+  user-select: none;
+  outline: none;
+  gap: 16px;
+}
+
+.accordion-trigger:hover {
+  background-color: rgba(37, 99, 235, 0.03);
+}
+
+.accordion-trigger:focus-visible {
+  outline: 2px solid var(--primary-color, #2563eb);
+  outline-offset: -2px;
+}
+
+.accordion-trigger__content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.accordion-trigger__icon-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.accordion-trigger--open .accordion-trigger__icon-prefix {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.accordion-trigger__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accordion-trigger__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+.accordion-trigger--open .accordion-trigger__title {
+  color: #1d4ed8;
+}
+
+.accordion-trigger__subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.accordion-trigger__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #64748b;
+  background-color: #f1f5f9;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.accordion-trigger:hover .accordion-trigger__chevron {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+.accordion-trigger--open .accordion-trigger__chevron {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.accordion-trigger__chevron--rotated {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   Smooth Accordion Content Transition
+   ========================================================================== */
+
+.accordion-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+
+.accordion-collapse--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.accordion-collapse[hidden] {
+  display: none;
+}
+
+/* When open, remove hidden display */
+.accordion-collapse:not([hidden]) {
+  display: grid;
+}
+
+.accordion-body {
+  overflow: hidden;
+}
+
+.accordion-body__inner {
+  padding: 0 22px 20px 22px;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+}
