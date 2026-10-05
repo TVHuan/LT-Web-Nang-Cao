@@ -1,6 +1,6 @@
-import React, { memo, useCallback, useRef } from 'react';
-import { FixedSizeGrid as Grid } from 'react-window';
-import type { GridChildComponentProps } from 'react-window';
+import React, { memo, useCallback, useMemo } from 'react';
+import { Grid } from 'react-window';
+import type { CellComponentProps, GridProps } from 'react-window';
 import type { Product } from '../types/product';
 import ProductCard from './ProductCard';
 
@@ -12,10 +12,17 @@ interface VirtualizedGridProps {
 }
 
 const ITEM_HEIGHT = 340;
-const COLUMN_COUNT = 4;
 const GAP = 16;
+const PADDING = 32;
 
-// Kỹ thuật Virtualization với react-window
+interface CellData {
+  colCount: number;
+  products: Product[];
+  selectedIds: Set<number>;
+  onSelect: (product: Product) => void;
+}
+
+// Kỹ thuật Virtualization với react-window v2
 // Chỉ render các item đang visible trong viewport thay vì toàn bộ 10.000 sản phẩm
 const VirtualizedGrid = memo(function VirtualizedGrid({
   products,
@@ -23,27 +30,36 @@ const VirtualizedGrid = memo(function VirtualizedGrid({
   onSelect,
   containerWidth,
 }: VirtualizedGridProps) {
-  const colCount = containerWidth > 1200 ? 4 : containerWidth > 900 ? 3 : containerWidth > 600 ? 2 : 1;
-  const rowCount = Math.ceil(products.length / colCount);
-  const itemWidth = Math.floor((containerWidth - GAP * (colCount - 1)) / colCount);
+  const availableWidth = containerWidth - PADDING * 2;
+  const colCount =
+    availableWidth > 1100 ? 4 :
+    availableWidth > 800 ? 3 :
+    availableWidth > 520 ? 2 : 1;
 
-  const Cell = useCallback(
-    ({ columnIndex, rowIndex, style }: GridChildComponentProps) => {
+  const itemWidth = Math.floor((availableWidth - GAP * (colCount - 1)) / colCount);
+  const rowCount = Math.ceil(products.length / colCount);
+  const gridHeight = Math.min(window.innerHeight - 260, 680);
+
+  const cellData: CellData = useMemo(
+    () => ({ colCount, products, selectedIds, onSelect }),
+    [colCount, products, selectedIds, onSelect]
+  );
+
+  // Cell component for react-window v2 — receives row/col index via cellProps
+  const CellComponent = useCallback(
+    ({ rowIndex, columnIndex }: { rowIndex: number; columnIndex: number }) => {
       const index = rowIndex * colCount + columnIndex;
       if (index >= products.length) return null;
       const product = products[index];
 
-      const cellStyle: React.CSSProperties = {
-        ...style,
-        left: Number(style.left) + columnIndex * GAP,
-        top: Number(style.top) + rowIndex * GAP,
-        width: itemWidth,
-        height: ITEM_HEIGHT,
-        padding: 0,
-      };
-
       return (
-        <div style={cellStyle}>
+        <div
+          style={{
+            padding: GAP / 2,
+            height: ITEM_HEIGHT,
+            boxSizing: 'border-box',
+          }}
+        >
           <ProductCard
             product={product}
             isSelected={selectedIds.has(product.id)}
@@ -52,29 +68,29 @@ const VirtualizedGrid = memo(function VirtualizedGrid({
         </div>
       );
     },
-    [products, selectedIds, onSelect, colCount, itemWidth]
+    [products, selectedIds, onSelect, colCount]
   );
 
-  const gridHeight = Math.min(window.innerHeight - 280, 700);
+  const visibleRows = Math.ceil(gridHeight / (ITEM_HEIGHT + GAP));
+  const visibleCards = Math.min(colCount * visibleRows, products.length);
 
   return (
     <div className="virtualized-container">
       <div className="virtualized-info">
-        <span>⚡ Virtualization đang hoạt động — chỉ render ~{colCount * Math.ceil(gridHeight / ITEM_HEIGHT)} / {products.length.toLocaleString()} cards</span>
+        ⚡ Virtualization đang hoạt động — chỉ render ~{visibleCards} / {products.length.toLocaleString()} cards trong viewport
       </div>
-      <Grid
-        columnCount={colCount}
-        columnWidth={itemWidth + GAP}
-        height={gridHeight}
-        rowCount={rowCount}
-        rowHeight={ITEM_HEIGHT + GAP}
-        width={containerWidth}
-        itemData={{ products, selectedIds, onSelect }}
-        overscanRowCount={2}
-        className="virtual-grid"
-      >
-        {Cell}
-      </Grid>
+      <div style={{ padding: `${GAP}px ${PADDING}px` }}>
+        <Grid
+          rowCount={rowCount}
+          columnCount={colCount}
+          rowHeight={ITEM_HEIGHT + GAP}
+          columnWidth={itemWidth + GAP}
+          height={gridHeight}
+          width={availableWidth}
+          overscanCount={2}
+          cellComponent={CellComponent}
+        />
+      </div>
     </div>
   );
 });
